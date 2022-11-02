@@ -98,32 +98,57 @@ void fill(float coords[3][2]) {
 	}
 }
 
+void sort_sides(float coords[vertex][3]) {
+	double min_z[side_count];
+	for (size_t i = 0; i < side_count; i++) {
+		min_z[i] = numeric_limits<double>::max();
+		for (size_t j = 0; j < 4; j++) {
+			double z = coords[sides[i][j]][2];
+			min_z[i] = z < min_z[i] ? z : min_z[i];
+		}
+	}
+	
+	for (size_t i = 0; i < side_count; i++)
+		for(size_t j = side_count - 1; j > i; j--)
+			if (min_z[j - 1] > min_z[j]) {
+				swap(min_z[j - 1], min_z[j]);
+				swap(sides[j - 1], sides[j]);
+				swap(colors[j - 1], colors[j]);
+			}
+}
+
 void show(float coords[vertex][3]) {
+	sort_sides(coords);
 	for (size_t i = 0; i < side_count; i++) {
 		float triangle[3][2] = {{coords[sides[i][0]][0], coords[sides[i][0]][1]},
 														{coords[sides[i][1]][0], coords[sides[i][1]][1]},
 														{coords[sides[i][2]][0], coords[sides[i][2]][1]}};
-		for (size_t j = 0; j < 3; j++) {
-			line(triangle[j][0], triangle[j][1], triangle[(j+1)%3][0], triangle[(j+1)%3][1]);	
-		}
+		// for (size_t j = 0; j < 3; j++) {
+		// 	line(triangle[j][0], triangle[j][1], triangle[(j+1)%3][0], triangle[(j+1)%3][1]);	
+		// }
 		// fill(triangle);
-		// int poly[8] = {
-		// 	(int)round(triangle[0][0]), (int)round(triangle[0][1]),
-		// 	(int)round(triangle[1][0]), (int)round(triangle[1][1]),
-		// 	(int)round(triangle[2][0]), (int)round(triangle[2][1]),
-		// 	(int)round(triangle[0][0]), (int)round(triangle[0][1]),
-		// };
-		// setfillstyle(SOLID_FILL, i);
-		// fillpoly(4, poly);
+		int poly[8] = {
+			(int)round(triangle[0][0]), (int)round(triangle[0][1]),
+			(int)round(triangle[1][0]), (int)round(triangle[1][1]),
+			(int)round(triangle[2][0]), (int)round(triangle[2][1]),
+			(int)round(triangle[0][0]), (int)round(triangle[0][1]),
+		};
+		setfillstyle(SOLID_FILL, i);
+		fillpoly(4, poly);
 	}
+	color = 1;
 }
 
 int main() {
 	int win = initwindow(width, height, "cg"), key;
-
-	// float test[3][2] = {{100, 100}, {500, 100}, {300, 400}};
-	// fill(test);
+	
+	// float plane[4][3] = {{100, 100, -100}, {200, 100, 0}, {200, 200, 0}, {50, 200, 0}};
+	// for (size_t j = 0; j < 4; j++) {
+	// 	line(plane[j][0], plane[j][1], plane[(j+1)%4][0], plane[(j+1)%4][1]);	
+	// }
+	// fill(plane);
 	// getch();
+	// return 0;
 
 	float prism_1[vertex][3] = {{100, 100, 0}, {500, 100, 0}, {300, 100, 200}, {100, 400, 0}, {500, 400, 0}, {300, 400, 200}};
 	float prism_2[vertex][3] = {{100+300, 100, 0}, {500+300, 100, 0}, {300+300, 100, 200}, {100+300, 400, 0}, {500+300, 400, 0}, {300+300, 400, 200}};
@@ -133,7 +158,7 @@ int main() {
 	cleardevice();
 	show(prism_1);
 
-	while (228) {
+	while (1) {
 		key = getch();
 		if (key == S_KEY) rotate(prism_1, new float[3]{deg2rad(angle), deg2rad(0), deg2rad(0)});
 		else if (key == W_KEY) rotate(prism_1, new float[3]{deg2rad(-angle), deg2rad(0), deg2rad(0)});

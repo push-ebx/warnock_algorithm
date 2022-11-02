@@ -15,9 +15,7 @@
 #define inc_coef 1.1
 #define speed 10
 
-#define vertex 6
-#define rib_count 9
-#define side_count 8
+#define vertex 4
 
 #define UP_KEY 72
 #define LEFT_KEY 75
