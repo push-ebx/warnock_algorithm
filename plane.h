@@ -13,9 +13,9 @@
 #define delay 1
 #define angle 7
 #define inc_coef 1.1
-#define speed 10
+#define speed 0.05
 
-#define vertex 4
+#define vertex 6
 
 #define UP_KEY 72
 #define LEFT_KEY 75
