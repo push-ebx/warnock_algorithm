@@ -2,7 +2,6 @@
 #include <math.h>
 #include <limits>
 #include <algorithm>
-#include <array>
 #include "graphics.h"
 #include "Matrix.h"
 
@@ -14,8 +13,8 @@
 #define angle 7
 #define inc_coef 1.1
 #define speed 0.05
-
-#define vertex 6
+#define eps 1
+#define background_color RGB(55, 55, 55)
 
 #define UP_KEY 72
 #define LEFT_KEY 75

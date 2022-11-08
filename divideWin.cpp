@@ -3,11 +3,13 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <array>
 
 using std::vector;
 using std::atan2;
+using std::array;
 
 #define width 512
 #define height 512
@@ -15,9 +17,8 @@ using std::atan2;
 
 int color = 1;
 
-struct point3d { float x, y, z, angle; };
-struct triangle { point3d tri[3]; int color; };
-struct shape { vector<triangle> triangles; };
+struct point3d { float x, y, z; };
+struct triangle { vector<point3d> tri; int color; };
 
 inline bool operator==(const point3d& a, const point3d& b) {
   return a.x == b.x && a.y == b.y;
@@ -55,33 +56,45 @@ point3d get_centroid(const vector<point3d> &poly) {
 	return {x /= count, y /= count, z /= count};
 }
 
-vector<point3d> intersection(vector<point3d> &p, const vector<point3d> w) {
+bool is_intersection(const vector<point3d> line_p, const vector<point3d> line_w, float *x, float *y) { // point
+  float c1_x, c1_y, c2_x, c2_y, s, t;
+	c1_x = line_p[1].x - line_p[0].x;
+	c1_y = line_p[1].y - line_p[0].y;
+	c2_x = line_w[1].x - line_w[0].x;
+	c2_y = line_w[1].y - line_w[0].y;
+
+	s = (-c1_y * (line_p[0].x - line_w[0].x) + c1_x * (line_p[0].y - line_w[0].y)) / (-c2_x * c1_y + c1_x * c2_y);
+	t = ( c2_x * (line_p[0].y - line_w[0].y) - c2_y * (line_p[0].x - line_w[0].x)) / (-c2_x * c1_y + c1_x * c2_y);
+	
+	if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+		*x = line_p[0].x + (t * c1_x); *y = line_p[0].y + (t * c1_y);
+		return true;
+	}
+	return false;
+}
+
+vector<point3d> get_polygon_intersection(const vector<point3d> &p, const vector<point3d> &w) {
   vector<point3d> res;
   int count_vert_p = p.size(), count_vert_w = w.size();
-  float c1_x, c1_y, c2_x, c2_y, s, t, x, y;
+  float x, y;
 
   for (size_t i = 0; i < count_vert_w; i++) {
     if (point_in_triangle(w[i], p)) res.push_back(w[i]);
   }
 
   for (size_t i = 0; i < count_vert_p; i++) {
-    c1_x = p[(i+1) % count_vert_p].x - p[i].x;
-    c1_y = p[(i+1) % count_vert_p].y - p[i].y;
-    for (size_t j = 0; j < count_vert_w; j++) {
-      c2_x = w[(j+1) % count_vert_w].x - w[j].x;
-      c2_y = w[(j+1) % count_vert_w].y - w[j].y;
-      s = (-c1_y * (p[i].x - w[j].x) + c1_x * (p[i].y - w[j].y)) / (-c2_x * c1_y + c1_x * c2_y);
-	    t = ( c2_x * (p[i].y - w[j].y) - c2_y * (p[i].x - w[j].x)) / (-c2_x * c1_y + c1_x * c2_y);
-      if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
-        x = p[i].x + (t * c1_x);
-        y = p[i].y + (t * c1_y);
-        if (!point_in_poly({x, y}, res)) res.push_back({x, y});
-      }
-    }
+    if (point_in_window(p[i], w)) res.push_back(p[i]);
   }
 
   for (size_t i = 0; i < count_vert_p; i++) {
-    if (point_in_window(p[i], w)) res.push_back(p[i]);
+    vector<point3d> line_p = {p[i], p[(i+1) % count_vert_p]};
+    for (size_t j = 0; j < count_vert_w; j++) {
+      vector<point3d> line_w = {w[j], w[(j+1) % count_vert_w]};
+      
+      if (is_intersection(line_p, line_w, &x, &y)) {
+        if (!point_in_poly({x, y}, res)) res.push_back({x, y});
+      } 
+    }
   }
 
   point3d center = get_centroid(res);
@@ -103,6 +116,7 @@ vector<point3d> intersection(vector<point3d> &p, const vector<point3d> w) {
   });
   return res;
 }
+
 
 bool is_in(vector<point3d> p, vector<point3d> w) {
   int count_vert = p.size();
@@ -129,12 +143,8 @@ void show_poly(const vector<point3d> &poly) {
 
 void divide(float x1, float y1, float x2, float y2) {
   if (x2 - x1 <= eps || y2 - y1 <= eps) return;
-  setcolor(WHITE);
-  rectangle(x1, y1, x2, y2);
   vector<point3d> window = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
-  setcolor(color++%5+1);
-  show_poly(intersection(triangle_coords, window));
-  Sleep(500);
+  
   float xc = (x2 - x1) / 2 + x1;
   float yc = (y2 - y1) / 2 + y1;
 
@@ -152,6 +162,7 @@ int main() {
   int win = initwindow(width, height, "ddd"), key;
   registermousehandler(WM_LBUTTONDOWN, click_handler);
   // divide(0,0,width,height);
+
   float x1 = 100;
   float y1 = 120;
   float x2 = 150;
@@ -161,24 +172,20 @@ int main() {
   show_poly(window);
   show_poly(triangle_coords);
   setcolor(YELLOW);
-  show_poly(intersection(triangle_coords, window));
+  show_poly(get_polygon_intersection(triangle_coords, window));
   while (1) {
 		key = getch();
 		if (key == 75) x1-=5, x2-=5;
     else if (key == 77) x1+=5, x2+=5;
     if (key == 72) y1-=5, y2-=5;
+    if (key == 61) y1-=5, y2+=5, x1-=5, x2+=5;
     else if (key == 80) y1+=5, y2+=5;
     window = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
     cleardevice();
     setlinestyle(SOLID_LINE, 1, 1);
     setcolor(WHITE); show_poly(window); show_poly(triangle_coords);
     setlinestyle(SOLID_LINE, 1, 3);
-    vector<point3d> intersect_poly = intersection(triangle_coords, window);
-    setcolor(YELLOW); show_poly(intersect_poly);
-    for (size_t i = 0; i < intersect_poly.size(); i++) {
-      std::cout << intersect_poly[i].x << " " << intersect_poly[i].y << "\n";
-    }
-    std::cout << "\n\n";
+    setcolor(YELLOW); show_poly(get_polygon_intersection(triangle_coords, window));
   }
   getch();
   return 0;

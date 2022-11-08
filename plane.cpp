@@ -154,13 +154,13 @@ void show(vector<array<float, 3>> &coords) {
 	// }
 
 	//////////////
-	for (int i = 0; i < vertex; i++) {
-		float x = coords[i][0], y = coords[i][1], z = coords[i][2];
-		x = n * x / (-z);
-		y = n * y / (-z);
-		z = (a * z + b) / -z;
-		proj_coords[i][0] = x, proj_coords[i][1] = y, proj_coords[i][2] = z;
-	}
+	// for (int i = 0; i < vertex; i++) {
+	// 	float x = coords[i][0], y = coords[i][1], z = coords[i][2];
+	// 	x = n * x / (-z);
+	// 	y = n * y / (-z);
+	// 	z = (a * z + b) / -z;
+	// 	proj_coords[i][0] = x, proj_coords[i][1] = y, proj_coords[i][2] = z;
+	// }
 	//////////////
 
 	// sort_sides(coords);
