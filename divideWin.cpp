@@ -1,6 +1,7 @@
 #include <iostream>
 #include "graphics.h"
 #include <vector>
+#include <set>
 #include <algorithm>
 #include <cmath>
 
@@ -13,8 +14,11 @@ using std::atan2;
 
 int color = 1;
 
-enum location_poly {in, out, intersect, cover};
 struct point3d{float x, y, z;};
+inline bool operator==(const point3d& a, const point3d& b) {
+  return a.x == b.x && a.y == b.y;
+}
+enum location_poly {in, out, intersect, cover};
 
 void divide(int x1, int y1, int x2, int y2) {
   if (x2 - x1 <= eps || y2 - y1 <= eps) return;
@@ -40,16 +44,15 @@ float sign (point3d p1, point3d p2, point3d p3) {
 
 bool point_in_triangle(point3d p, vector<point3d> t) {
   float d1, d2, d3;
-  bool has_neg, has_pos;
-
   d1 = sign(p, t[0], t[1]);
   d2 = sign(p, t[1], t[2]);
   d3 = sign(p, t[2], t[0]);
+  return !(((d1 < 0) || (d2 < 0) || (d3 < 0)) && ((d1 > 0) || (d2 > 0) || (d3 > 0)));
+}
 
-  has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-  has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
-
-  return !(has_neg && has_pos);
+bool point_in_poly(point3d point, vector<point3d> poly) {
+  for(point3d &p : poly) if (p == point) return true;
+  return false;
 }
 
 vector<point3d> intersection(vector<point3d> &p, const vector<point3d> w) {
@@ -77,11 +80,19 @@ vector<point3d> intersection(vector<point3d> &p, const vector<point3d> w) {
       if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
         x = p[i].x + (t * c1_x);
         y = p[i].y + (t * c1_y);
-        new_poly.push_back({x, y});
+        if (!point_in_poly({x, y}, new_poly)) new_poly.push_back({x, y});
       }
     }
   }
-  sort(new_poly.begin(), new_poly.end(), [](point3d a, point3d b){ return atan2(a.y, a.x) > atan2(b.y, b.x); });
+  point3d center = new_poly[0];
+
+  for(point3d &p : new_poly) {
+    p.z = atan(float(p.y - center.y)/float(p.x - center.x));
+  }
+  
+  sort(new_poly.begin(), new_poly.end(), [](point3d a, point3d b){
+    return a.z > b.z;
+  });
   return new_poly;
 }
 
@@ -113,7 +124,7 @@ int main() {
   // divide(0,0,width,height);
   vector<point3d> triangle = {{100, 100}, {200, 100}, {150, 200}};
   // vector<point3d> window = {{100, 100}, {500, 100}, {500, 500}, {100, 500}};
-  vector<point3d> window = {{140, 150}, {300, 150}, {300, 300}, {140, 300}};
+  vector<point3d> window = {{130, 120}, {300, 120}, {300, 160}, {130, 160}};
   show_poly(triangle);
   show_poly(window);
   float x, y;
