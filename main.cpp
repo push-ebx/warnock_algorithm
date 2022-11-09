@@ -250,15 +250,17 @@ void divide(const vector<triangle> &shape, float x1=0, float y1=0, float x2=widt
 		// cout << out_tri.size() << " size\n";
 		if(out_tri.size()) {
 			triangle max_z_poly = out_tri[0];
-			float max_z = max_z_poly.points[0].z;
+			float avg_max_z = -9999, sum_max = 0; // ??
 
 			for (size_t i = 0; i < out_tri.size(); i++) {
 				for (size_t j = 0; j < 3; j++) {
-					if (out_tri[i].points[j].z > max_z) {
-						max_z = out_tri[i].points[j].z;
-						max_z_poly = out_tri[i];
-					}
+					sum_max += out_tri[i].points[j].z;
 				}
+				if (avg_max_z < sum_max/3) {
+					avg_max_z = sum_max/3;
+					max_z_poly = out_tri[i];
+				}
+				sum_max = 0;
 			}
 			show_poly(window, true, max_z_poly.color, max_z_poly.color);
 			// setfillstyle(SOLID_FILL, max_z_poly.color);
@@ -299,7 +301,7 @@ void show(const vector<triangle> &shape) {
 		// cout << get_count_poly_in_window(vec_tri, window) << "\n";
 		// show_poly(get_polygon_intersection(poly.points, window), true, poly.color);
   }
-	float x1 = 250, y1 = 250, x2 = 300, y2 = 300;
+	float x1 = 150, y1 = 150, x2 = 500, y2 = 500;
   vector<point> window = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
 	divide(vec_tri, x1,y1,x2,y2);
 	show_poly(window, false);
