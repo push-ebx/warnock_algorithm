@@ -3,3 +3,4 @@
 *.exe
 task.txt
 .github
+.github/*
