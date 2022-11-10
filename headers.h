@@ -10,10 +10,10 @@
 #define width 720
 #define height 720
 #define delay 1
-#define angle 7
+#define angle 10
 #define inc_coef 1.1
 #define speed 0.05
-#define eps 10
+#define eps 1
 #define background_color RGB(55, 55, 55)
 
 #define UP_KEY 72

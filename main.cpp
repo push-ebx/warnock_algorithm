@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 #include "headers.h"
 
-struct point { float x, y, z; };
+struct point { double x, y, z; };
 struct triangle { vector<point> points; int color; };
 
 inline bool operator==(const point& a, const point& b) {
@@ -9,7 +9,7 @@ inline bool operator==(const point& a, const point& b) {
 }
 
 point get_shape_centroid(const vector<triangle> &shape) {
-	float x = 0, y = 0, z = 0;
+	double x = 0, y = 0, z = 0;
   int count_side = shape.size();
 	for (size_t i = 0; i < count_side; i++) {
 		for (size_t j = 0; j < 3; j++) {
@@ -20,25 +20,25 @@ point get_shape_centroid(const vector<triangle> &shape) {
 }
 
 point get_poly_centroid(const vector<point> &poly) {
-	float x = 0, y = 0, z = 0;
+	double x = 0, y = 0, z = 0;
   int count = poly.size();
 	for (size_t i = 0; i < count; i++) x += poly[i].x, y += poly[i].y, z += poly[i].z;
 	return {x /= count, y /= count, z /= count};
 }
 
-void rotate(vector<triangle> &shape, float ang[3]) {
+void rotate(vector<triangle> &shape, double ang[3]) {
 	point center = get_shape_centroid(shape);
-	Matrix<float> rotate_x(vector<vector<float>>({{1, 0, 0}, {0, cos(ang[0]), sin(ang[0])}, {0, -sin(ang[0]), cos(ang[0])}}));
-	Matrix<float> rotate_y(vector<vector<float>>({{cos(ang[1]), 0, -sin(ang[1])}, {0, 1, 0}, {sin(ang[1]), 0, cos(ang[1])}}));
-	Matrix<float> rotate_z(vector<vector<float>>({{cos(ang[2]), sin(ang[2]), 0}, {-sin(ang[2]), cos(ang[2]), 0}, {0, 0, 1}}));
-	Matrix<float> res = rotate_x*rotate_y*rotate_z;
+	Matrix<double> rotate_x(vector<vector<double>>({{1, 0, 0}, {0, cos(ang[0]), sin(ang[0])}, {0, -sin(ang[0]), cos(ang[0])}}));
+	Matrix<double> rotate_y(vector<vector<double>>({{cos(ang[1]), 0, -sin(ang[1])}, {0, 1, 0}, {sin(ang[1]), 0, cos(ang[1])}}));
+	Matrix<double> rotate_z(vector<vector<double>>({{cos(ang[2]), sin(ang[2]), 0}, {-sin(ang[2]), cos(ang[2]), 0}, {0, 0, 1}}));
+	Matrix<double> res = rotate_x*rotate_y*rotate_z;
 
-	float x, y, z;
+	double x, y, z;
 	for (size_t i = 0; i < shape.size(); i++) {
 		for (size_t j = 0; j < 3; j++) {
 			x = shape[i].points[j].x; y = shape[i].points[j].y; z = shape[i].points[j].z;
-			Matrix<float> temp(vector<vector<float>>({{x-center.x, y-center.y, z-center.z}}));
-			Matrix<float> new_coords = temp*res;
+			Matrix<double> temp(vector<vector<double>>({{x-center.x, y-center.y, z-center.z}}));
+			Matrix<double> new_coords = temp*res;
 			shape[i].points[j].x = new_coords(0, 0) + center.x;
 			shape[i].points[j].y = new_coords(0, 1) + center.y;
 			shape[i].points[j].z = new_coords(0, 2) + center.z;
@@ -47,17 +47,17 @@ void rotate(vector<triangle> &shape, float ang[3]) {
 	delete ang;
 }
 
-void scale(vector<triangle> &shape, float coef) {
+void scale(vector<triangle> &shape, double coef) {
 	point center = get_shape_centroid(shape);
 	coef = coef > 0 ? coef : -1 / coef;
-	Matrix<float> scale_mat(vector<vector<float>>({{coef, 0, 0}, {0, coef, 0}, {0, 0, coef}}));
+	Matrix<double> scale_mat(vector<vector<double>>({{coef, 0, 0}, {0, coef, 0}, {0, 0, coef}}));
 
-	float x, y, z;
+	double x, y, z;
 	for (size_t i = 0; i < shape.size(); i++) {
 		for (size_t j = 0; j < 3; j++) {
 			x = shape[i].points[j].x; y = shape[i].points[j].y; z = shape[i].points[j].z;
-			Matrix<float> temp(vector<vector<float>>({{x-center.x, y-center.y, z-center.z}}));
-			Matrix<float> new_coords = temp*scale_mat;
+			Matrix<double> temp(vector<vector<double>>({{x-center.x, y-center.y, z-center.z}}));
+			Matrix<double> new_coords = temp*scale_mat;
 			shape[i].points[j].x = new_coords(0, 0) + center.x;
 			shape[i].points[j].y = new_coords(0, 1) + center.y;
 			shape[i].points[j].z = new_coords(0, 2) + center.z;
@@ -65,7 +65,7 @@ void scale(vector<triangle> &shape, float coef) {
 	}
 }
 
-void translate(vector<triangle> &shape, float dx, float dy, float dz) {
+void translate(vector<triangle> &shape, double dx, double dy, double dz) {
 	for (size_t i = 0; i < shape.size(); i++) {
 		for (size_t j = 0; j < 3; j++) {
 			shape[i].points[j].x += dx, shape[i].points[j].y += dy, shape[i].points[j].z += dz;
@@ -73,8 +73,8 @@ void translate(vector<triangle> &shape, float dx, float dy, float dz) {
 	}
 }
 
-bool is_intersection(const vector<point> line_p, const vector<point> line_w, float *x, float *y) {
-  float c1_x, c1_y, c2_x, c2_y, s, t;
+bool is_intersection(const vector<point> line_p, const vector<point> line_w, double *x, double *y) {
+  double c1_x, c1_y, c2_x, c2_y, s, t;
 	c1_x = line_p[1].x - line_p[0].x;
 	c1_y = line_p[1].y - line_p[0].y;
 	c2_x = line_w[1].x - line_w[0].x;
@@ -94,12 +94,12 @@ bool point_in_window(point p, vector<point> w) {
   return p.x >= w[0].x && p.x <= w[1].x && p.y <= w[2].y && p.y >= w[0].y;
 }
 
-float sign (point p1, point p2, point p3) {
+double sign (point p1, point p2, point p3) {
   return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
 }
 
 bool point_in_triangle(point p, vector<point> t) {
-  float d1, d2, d3;
+  double d1, d2, d3;
   d1 = sign(p, t[0], t[1]);
   d2 = sign(p, t[1], t[2]);
   d3 = sign(p, t[2], t[0]);
@@ -114,7 +114,7 @@ bool point_in_poly(point p, vector<point> poly) {
 vector<point> get_polygon_intersection(const vector<point> &p, const vector<point> &w) {
   vector<point> res;
   int count_vert_p = p.size(), count_vert_w = w.size();
-  float x, y;
+  double x, y;
 
   for (size_t i = 0; i < count_vert_w; i++) {
     if (point_in_triangle(w[i], p)) res.push_back(w[i]);
@@ -158,7 +158,7 @@ vector<point> get_polygon_intersection(const vector<point> &p, const vector<poin
 void fill(const vector<point> &poly, int color=WHITE) {
 	setcolor(color);
 	int count_vertex = poly.size();
-	float bounds[2][2] = {{poly[0].x, poly[0].y}, {poly[0].x, poly[0].y}};
+	double bounds[2][2] = {{poly[0].x, poly[0].y}, {poly[0].x, poly[0].y}};
 	for (int i = 1; i < count_vertex; i++) {
 		int x = poly[i].x, y = poly[i].y;
 		if (x < bounds[0][0]) bounds[0][0] = x;
@@ -166,8 +166,8 @@ void fill(const vector<point> &poly, int color=WHITE) {
 		if (y < bounds[0][1]) bounds[0][1] = y;
 		else if (y > bounds[1][1]) bounds[1][1] = y;
 	}
-	for (float i = bounds[0][1]+ 0.01; i <= bounds[1][1]; i++) {
-		float pts[20] = {0};
+	for (double i = bounds[0][1]+ 0.01; i <= bounds[1][1]; i++) {
+		double pts[20] = {0};
 		int count = 0;
 
 		vector<point> pt_vec = {{bounds[0][0] - 1, i}, {bounds[1][0] + 1, i}};
@@ -175,11 +175,11 @@ void fill(const vector<point> &poly, int color=WHITE) {
 		{
 			vector<point> line = {{poly[j].x, poly[j].y},
 													{poly[(j + 1) % count_vertex].x, poly[(j + 1) % count_vertex].y}};
-			float x, y;
+			double x, y;
 			if (is_intersection(pt_vec, line, &x, &y)) pts[count++] = x;
 		}
 		if (count) {
-			qsort(pts, count, sizeof(float), [](const void* x, const void* y) { return (int)(*(float*)x - *(float*)y); });
+			qsort(pts, count, sizeof(double), [](const void* x, const void* y) { return (int)(*(double*)x - *(double*)y); });
 			for (int j = 0; j < count; j++) {
 				if (pts[j+1]) line(pts[j], i, pts[j + 1], i);
 			}
@@ -187,16 +187,16 @@ void fill(const vector<point> &poly, int color=WHITE) {
 	}
 }
 
-void show_poly(const vector<point> &poly, bool is_filling, int color=WHITE, int border_color=WHITE) {
+void show_poly(const vector<point> &poly, int fill_color=WHITE, int border_color=WHITE) {
   int count_vert = poly.size();
 	if (!count_vert) return;
-	if (is_filling) fill(poly, color);
-	if (border_color == -1) return;
-	setcolor(border_color);
-  for (size_t i = 0; i < count_vert; i++) {
-    line(poly[i].x, poly[i].y, poly[(i+1) % count_vert].x, poly[(i+1) % count_vert].y);
-  }
-	setcolor(WHITE);
+	if (fill_color != -1) fill(poly, fill_color);
+	if (border_color != -1) {
+		setcolor(border_color);
+		for (size_t i = 0; i < count_vert; i++) {
+			line(poly[i].x, poly[i].y, poly[(i+1) % count_vert].x, poly[(i+1) % count_vert].y);
+		}
+	}
 }
 
 int get_count_poly_in_window(const vector<triangle> &shape, const vector<point> &win, vector<triangle> &ps) {
@@ -208,7 +208,6 @@ int get_count_poly_in_window(const vector<triangle> &shape, const vector<point> 
 			ps.push_back({temp, shape[i].color});
 		}
 	}
-	// cout << count << "\n";
 	return count;
 }
 
@@ -219,61 +218,55 @@ bool is_poly_in_window(vector<point> &poly, vector<point> &win) {
 	return true;
 }
 
-void divide(const vector<triangle> &shape, float x1=0, float y1=0, float x2=width, float y2=height) {
-  if (x2 - x1 <= eps || y2 - y1 <= eps) return;
+void divide(const vector<triangle> &shape, double x1=0, double y1=0, double x2=width, double y2=height) {
+	if (x2 - x1 < eps || y2 - y1 < eps) return;
 	
 	vector<point> window = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
   // rectangle(x1, y1, x2, y2);
-	// show_poly(window, false);
 	vector<triangle> polygons;
-	int count = get_count_poly_in_window(shape, window, polygons); // poly.size()
+	int count = get_count_poly_in_window(shape, window, polygons);
 
 	if (!count) return;
-	else if (count == 1) { // && is_poly_in_window(polygons[0].points, window)
-		show_poly(polygons[0].points, true, polygons[0].color);
+	else if (count == 1) {
+		show_poly(polygons[0].points, polygons[0].color, -1);
 		return;
 	}
 	else {
-		bool in_window; // охватывает окно
+		bool is_window_in_poly;
 		vector<triangle> out_tri;
 
 		for (size_t i = 0; i < shape.size(); i++) {
-			in_window = true;
+			is_window_in_poly = true;
 			for (size_t j = 0; j < 4; j++) {
-				if (!point_in_triangle(window[j], shape[i].points)) in_window = false;
-				// if (window[j].x == )
+				if (!point_in_triangle(window[j], shape[i].points)) is_window_in_poly = false;
 			}
-			if (in_window) {
+			if (is_window_in_poly) {
 				out_tri.push_back(shape[i]);
 			}
 		}
-		// cout << out_tri.size() << " size\n";
-		if(out_tri.size()) {
+
+		if(out_tri.size() == count) {
 			triangle max_z_poly = out_tri[0];
-			float avg_max_z = -9999, sum_max = 0; // ??
+			double avg_max_z = -9999.0, sum_max = 0;
 
 			for (size_t i = 0; i < out_tri.size(); i++) {
 				for (size_t j = 0; j < 3; j++) {
 					sum_max += out_tri[i].points[j].z;
 				}
-				if (avg_max_z < sum_max/3) {
-					avg_max_z = sum_max/3;
+				if (avg_max_z < sum_max/3.0) {
+					avg_max_z = sum_max/3.0;
 					max_z_poly = out_tri[i];
 				}
 				sum_max = 0;
 			}
-			show_poly(window, true, max_z_poly.color, max_z_poly.color);
-			// setfillstyle(SOLID_FILL, max_z_poly.color);
-			// setcolor(max_z_poly.color);
-			// int poly[10] = {x1,y1,x2,y1,x2,y2,x1,y2,x1,y1};
-			// drawpoly(5, poly);
-			// fillpoly(5, poly);
+			
+			window = {{x1-1, y1-1}, {x2+1, y1-1}, {x2+1, y2+1}, {x1-1, y2+1}};
+			show_poly(window, max_z_poly.color, max_z_poly.color);
 			return;
 		}
 	}
-	// Sleep(500);
-  float xc = (x2 - x1) / 2 + x1;
-  float yc = (y2 - y1) / 2 + y1;
+  double xc = (x2 - x1) / 2 + x1;
+  double yc = (y2 - y1) / 2 + y1;
 
   divide(shape, x1, y1, xc, yc);
   divide(shape, x1, yc, xc, y2);
@@ -281,70 +274,88 @@ void divide(const vector<triangle> &shape, float x1=0, float y1=0, float x2=widt
   divide(shape, xc, yc, x2, y2);
 }
 
-void show(const vector<triangle> &shape) {
-	int count_side = shape.size();
-  triangle poly; // ???
+void show(const vector<vector<triangle>> &shapes) {
+	vector<triangle> res;
+	for (auto &shape : shapes) res.insert(res.end(), shape.begin(), shape.end());
+
+	int count_side = res.size();
+  triangle poly;
 	poly.points.resize(3);
 	vector<triangle> vec_tri;
 
   for (size_t i = 0; i < count_side; i++) {
     for (size_t j = 0; j < 3; j++) {
-      poly.points[j].x = (shape[i].points[j].x * 0.5 + 0.5) * width;
-      poly.points[j].y = (shape[i].points[j].y * 0.5 + 0.5) * height;
+      poly.points[j].x = (res[i].points[j].x * 0.5 + 0.5) * width;
+      poly.points[j].y = (res[i].points[j].y * 0.5 + 0.5) * height;
+			poly.points[j].z = res[i].points[j].z;
     }
-		poly.color = shape[i].color;
+		poly.color = res[i].color;
 		vec_tri.push_back(poly);
-		show_poly(poly.points, true, poly.color);
-		// float x1 = 50, y1 = 50, x2 = 390, y2 = 390;
-  	// vector<point> window = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
-		// show_poly(window, false);
-		// cout << get_count_poly_in_window(vec_tri, window) << "\n";
-		// show_poly(get_polygon_intersection(poly.points, window), true, poly.color);
   }
-	float x1 = 150, y1 = 150, x2 = 500, y2 = 500;
+	
+	double x1 = 0, y1 = 0, x2 = width, y2 = height;
   vector<point> window = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
 	divide(vec_tri, x1,y1,x2,y2);
-	show_poly(window, false);
 }
+
+void click_handler(int x, int y) { cout << x << " " << y << "\n"; }
 
 int main() {
 	int win = initwindow(width, height, "cg"), key;
-	// vector<point> window = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
-	
+
 	vector<triangle> prism1 = {
 		{ {{-0.5, -0.5, -2.0}, {0.0, -0.5, -2.8}, {0.5, -0.5, -2.0}}, 1}, // abc
 		{ {{-0.5,  0.5, -2.0}, {0.5,  0.5, -2.0}, {0.0,  0.5, -2.8}}, 2}, // def
-		{ {{-0.5, -0.5, -2.0}, {0.5, -0.5, -2.0}, {0.5,  0.5, -2.0}}, 3}, // ace
+		{ {{-0.5, -0.5, -2.0}, {0.5, -0.5, -2.0}, {0.5,  0.5, -2.0}}, 4}, // ace
 		{ {{-0.5, -0.5, -2.0}, {-0.5,  0.5, -2.0}, {0.5,  0.5, -2.0}}, 4}, // ade
-		{ {{-0.5, -0.5, -2.0}, {0.0, -0.5, -2.8}, {-0.5,  0.5, -2.0}}, 5}, // abd
-		{ {{0.0, -0.5, -2.8}, {0.0,  0.5, -2.8}, {-0.5,  0.5, -2.0}}, 6}, // bfd
-		{ {{0.0, -0.5, -2.8}, {0.5, -0.5, -2.0}, {0.5,  0.5, -2.0}}, 7}, // bce
-		{ {{0.0, -0.5, -2.8}, {0.5,  0.5, -2.0}, {0.0,  0.5, -2.8}}, 8}, // bef
-  };
-	
-	// scale(prism1, -inc_coef*5);
-	// translate(prism1, speed*5, speed*5, 0);
+		{ {{-0.5, -0.5, -2.0}, {0.0, -0.5, -2.8}, {-0.5,  0.5, -2.0}}, 3}, // abd
+		{ {{0.0, -0.5, -2.8}, {0.0,  0.5, -2.8}, {-0.5,  0.5, -2.0}}, 3}, // bfd
+		{ {{0.0, -0.5, -2.8}, {0.0,  0.5, -2.8}, {0.5,  0.5, -2.0}}, 5}, // bef
+		{ {{0.0, -0.5, -2.8}, {0.5, -0.5, -2.0}, {0.5,  0.5, -2.0}}, 5}, // bce
+	};
 
-	show(prism1);
-	
+	vector<triangle> prism2 = {
+		{ {{-0.5, -0.5, -2.0}, {0.0, -0.5, -2.8}, {0.5, -0.5, -2.0}}, 1}, // abc
+		{ {{-0.5,  0.5, -2.0}, {0.5,  0.5, -2.0}, {0.0,  0.5, -2.8}}, 2}, // def
+		{ {{-0.5, -0.5, -2.0}, {0.5, -0.5, -2.0}, {0.5,  0.5, -2.0}}, 4}, // ace
+		{ {{-0.5, -0.5, -2.0}, {-0.5,  0.5, -2.0}, {0.5,  0.5, -2.0}}, 4}, // ade
+		{ {{-0.5, -0.5, -2.0}, {0.0, -0.5, -2.8}, {-0.5,  0.5, -2.0}}, 3}, // abd
+		{ {{0.0, -0.5, -2.8}, {0.0,  0.5, -2.8}, {-0.5,  0.5, -2.0}}, 3}, // bfd
+		{ {{0.0, -0.5, -2.8}, {0.0,  0.5, -2.8}, {0.5,  0.5, -2.0}}, 5}, // bef
+		{ {{0.0, -0.5, -2.8}, {0.5, -0.5, -2.0}, {0.5,  0.5, -2.0}}, 5}, // bce
+	};
+
+	scale(prism1, -inc_coef*17);
+	scale(prism2, -inc_coef*17);
+
+	translate(prism1, speed*5, speed*5, 0);
+	rotate(prism1, new double[3]{deg2rad(40), deg2rad(60), deg2rad(0)});
+	rotate(prism2, new double[3]{deg2rad(-40), deg2rad(-60), deg2rad(0)});
+
+	vector<vector<triangle>> shapes = {prism1, prism2};
   setbkcolor(background_color);
+	show(shapes);
 
+	bool is_1 = true;
 	while (1) {
 		key = getch();
-		if (key == S_KEY) rotate(prism1, new float[3]{deg2rad(angle), deg2rad(0), deg2rad(0)});
-		else if (key == W_KEY) rotate(prism1, new float[3]{deg2rad(-angle), deg2rad(0), deg2rad(0)});
-		else if (key == D_KEY) rotate(prism1, new float[3]{deg2rad(0), deg2rad(angle), deg2rad(0)});
-		else if (key == A_KEY) rotate(prism1, new float[3]{deg2rad(0), deg2rad(-angle), deg2rad(0)});
-		else if (key == X_KEY) rotate(prism1, new float[3]{deg2rad(0), deg2rad(0), deg2rad(angle)});
-		else if (key == Z_KEY) rotate(prism1, new float[3]{deg2rad(0), deg2rad(0), deg2rad(-angle)});
-		else if (key == PLUS_KEY) scale(prism1, inc_coef);
-		else if (key == MINUS_KEY) scale(prism1, -inc_coef);
-		else if (key == UP_KEY) translate(prism1, 0, -speed, 0);
-		else if (key == DOWN_KEY) translate(prism1, 0, speed, 0);
-		else if (key == LEFT_KEY) translate(prism1, -speed, 0, 0);
-		else if (key == RIGHT_KEY) translate(prism1, speed, 0, 0);
-		show(prism1); swapbuffers(); cleardevice();
-		Sleep(0);
+		if (key == S_KEY) rotate(is_1 ? shapes[0] : shapes[1], new double[3]{deg2rad(angle), deg2rad(0), deg2rad(0)});
+		else if (key == W_KEY) rotate(is_1 ? shapes[0] : shapes[1], new double[3]{deg2rad(-angle), deg2rad(0), deg2rad(0)});
+		else if (key == D_KEY) rotate(is_1 ? shapes[0] : shapes[1], new double[3]{deg2rad(0), deg2rad(angle), deg2rad(0)});
+		else if (key == A_KEY) rotate(is_1 ? shapes[0] : shapes[1], new double[3]{deg2rad(0), deg2rad(-angle), deg2rad(0)});
+		else if (key == X_KEY) rotate(is_1 ? shapes[0] : shapes[1], new double[3]{deg2rad(0), deg2rad(0), deg2rad(angle)});
+		else if (key == Z_KEY) rotate(is_1 ? shapes[0] : shapes[1], new double[3]{deg2rad(0), deg2rad(0), deg2rad(-angle)});
+		else if (key == PLUS_KEY) scale(is_1 ? shapes[0] : shapes[1], inc_coef);
+		else if (key == MINUS_KEY) scale(is_1 ? shapes[0] : shapes[1], -inc_coef);
+		else if (key == UP_KEY) translate(is_1 ? shapes[0] : shapes[1], 0, -speed, 0);
+		else if (key == DOWN_KEY) translate(is_1 ? shapes[0] : shapes[1], 0, speed, 0);
+		else if (key == LEFT_KEY) translate(is_1 ? shapes[0] : shapes[1], -speed, 0, 0);
+		else if (key == RIGHT_KEY) translate(is_1 ? shapes[0] : shapes[1], speed, 0, 0);
+		else if (key == 91) translate(is_1 ? shapes[0] : shapes[1], 0, 0, -speed);
+		else if (key == 93) translate(is_1 ? shapes[0] : shapes[1], 0, 0, speed);
+		else if (key == ESC_KEY) is_1 = !is_1;
+
+		show(shapes); swapbuffers(); cleardevice();
 	}
 	return 0;
 }
