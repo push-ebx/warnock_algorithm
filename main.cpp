@@ -191,6 +191,7 @@ void show_poly(const vector<point> &poly, int fill_color=WHITE, int border_color
   int count_vert = poly.size();
 	if (!count_vert) return;
 	if (fill_color != -1) fill(poly, fill_color);
+	
 	if (border_color != -1) {
 		setcolor(border_color);
 		for (size_t i = 0; i < count_vert; i++) {
@@ -222,7 +223,6 @@ void divide(const vector<triangle> &shape, double x1=0, double y1=0, double x2=w
 	if (x2 - x1 < eps || y2 - y1 < eps) return;
 	
 	vector<point> window = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
-  // rectangle(x1, y1, x2, y2);
 	vector<triangle> polygons;
 	int count = get_count_poly_in_window(shape, window, polygons);
 
@@ -274,6 +274,25 @@ void divide(const vector<triangle> &shape, double x1=0, double y1=0, double x2=w
   divide(shape, xc, yc, x2, y2);
 }
 
+void show_shadow(vector<triangle> &polygons) {
+	float ground = -1.5;
+	float light_dir[3] = {0.0, -1.0, 0.0};
+
+	for (int i = 0; i < polygons.size(); i++) {
+		triangle poly;
+		for(int j = 0; j < 3; j++) {
+			point pt = polygons[i].points[j];
+      float t = (ground - pt.y) / light_dir[1];
+
+      pt.x += t*light_dir[0]; pt.y = ground; pt.z += t*light_dir[2];   
+      pt.y = 1.0 * pt.y / (-pt.z * 0.8);
+      pt.y = (-pt.y * 0.5 + 0.5) * height;
+			poly.points.push_back(pt);
+		}
+		show_poly(poly.points, RGB(0, 0, 0), -1);
+	}
+}
+
 void show(const vector<vector<triangle>> &shapes) {
 	vector<triangle> res;
 	for (auto &shape : shapes) res.insert(res.end(), shape.begin(), shape.end());
@@ -292,6 +311,7 @@ void show(const vector<vector<triangle>> &shapes) {
 		poly.color = res[i].color;
 		vec_tri.push_back(poly);
   }
+  show_shadow(vec_tri);
 	
 	double x1 = 0, y1 = 0, x2 = width, y2 = height;
   vector<point> window = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
@@ -302,7 +322,7 @@ void click_handler(int x, int y) { cout << x << " " << y << "\n"; }
 
 int main() {
 	int win = initwindow(width, height, "cg"), key;
-
+	registermousehandler(WM_LBUTTONDOWN, click_handler);
 	vector<triangle> prism1 = {
 		{ {{-0.5, -0.5, -2.0}, {0.0, -0.5, -2.8}, {0.5, -0.5, -2.0}}, 1}, // abc
 		{ {{-0.5,  0.5, -2.0}, {0.5,  0.5, -2.0}, {0.0,  0.5, -2.8}}, 2}, // def

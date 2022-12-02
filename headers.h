@@ -2,6 +2,7 @@
 #include <math.h>
 #include <limits>
 #include <algorithm>
+#include <thread>
 #include "graphics.h"
 #include "Matrix.h"
 
@@ -9,6 +10,7 @@
 
 #define width 720
 #define height 720
+#define ratio (float)height / width
 #define delay 1
 #define angle 10
 #define inc_coef 1.1
