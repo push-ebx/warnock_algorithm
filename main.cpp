@@ -10,7 +10,7 @@ inline bool operator==(const point& a, const point& b) {
 
 point get_shape_centroid(const vector<triangle> &shape) {
 	double x = 0, y = 0, z = 0;
-  int count_side = shape.size();
+  	int count_side = shape.size();
 	for (size_t i = 0; i < count_side; i++) {
 		for (size_t j = 0; j < 3; j++) {
 			x += shape[i].points[j].x; y += shape[i].points[j].y; z += shape[i].points[j].z;
@@ -173,8 +173,8 @@ void fill(const vector<point> &poly, int color=WHITE) {
 		vector<point> pt_vec = {{bounds[0][0] - 1, i}, {bounds[1][0] + 1, i}};
 		for (int j = 0; j < count_vertex; j++)
 		{
-			vector<point> line = {{poly[j].x, poly[j].y},
-													{poly[(j + 1) % count_vertex].x, poly[(j + 1) % count_vertex].y}};
+			vector<point> line = {{poly[j].x, poly[j].y}, 
+					      {poly[(j + 1) % count_vertex].x, poly[(j + 1) % count_vertex].y}};
 			double x, y;
 			if (is_intersection(pt_vec, line, &x, &y)) pts[count++] = x;
 		}
