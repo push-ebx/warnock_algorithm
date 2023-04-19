@@ -9,7 +9,7 @@ inline bool operator==(const point& a, const point& b) {
 }
 
 point get_shape_centroid(const vector<triangle> &shape) {
-	double x = 0, y = 0, z = 0;
+	double x = 0, y = 0, z = 0; 
   	int count_side = shape.size();
 	for (size_t i = 0; i < count_side; i++) {
 		for (size_t j = 0; j < 3; j++) {
